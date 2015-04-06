@@ -16,9 +16,12 @@ def api_root(request, format=None):
         'comments': reverse('face-comment-list', request=request, format=format),
         })
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
 
 class GalleryViewSet(viewsets.ModelViewSet):
     queryset = Face.objects.all()
@@ -30,6 +33,16 @@ class GalleryViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+    def list(self, request, face_pk=None):
+        queryset = self.queryset.filter(face=face_pk)
+        serializer = CommentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, face_pk=None):
+        queryset = self.queryset.get(pk=pk, face=face_pk)
+        serializer = CommentSerializer(queryset)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

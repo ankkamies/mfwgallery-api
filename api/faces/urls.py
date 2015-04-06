@@ -30,11 +30,15 @@ face_comment_detail = CommentViewSet.as_view({
 })
 
 user_list = UserViewSet.as_view({
-    'get': 'list'
+    'get': 'list',
+    'post': 'create'
 })
 
 user_detail = UserViewSet.as_view({
-    'get': 'retrieve'
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
 })
 
 urlpatterns = format_suffix_patterns([
