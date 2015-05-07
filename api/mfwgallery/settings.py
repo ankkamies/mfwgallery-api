@@ -21,11 +21,20 @@ SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 """
 TEMPLATE_DIRS = (os.path.join(SETTINGS_PATH, 'templates'))
 STATICFILES_DIRS = (os.path.join(SETTINGS_PATH, 'static'),)
-
-REST_FRAMEWORK = {
-        'DEFAULT_RENDERER_CLASSES': ( 'rest_framework.renderers.JSONRenderer', )
-}
 """
+REST_FRAMEWORK = {
+
+        'DEFAULT_AUTHENTICATION_CLASSES': ( 
+            'rest_framework.authentication.BasicAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+        ),
+
+        'DEFAULT_RENDERER_CLASSES': ( 
+            'rest_framework.renderers.JSONRenderer', 
+        )
+
+}
+
 
 # Quick-start development settings - unsuitable for production                                                                                                                                                      
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/                                                                                                                                             
@@ -53,15 +62,36 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'rest_framework_nested',
     'faces',
+    'corsheaders'
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:9001'
+)
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'accept-encoding',
+    'origin',
+    'authorization',
+    'x-csrftoken'
+)
+
+CORS_EXPOSE_HEADERS = (
+    'Set-Cookie'
 )
 
 ROOT_URLCONF = 'mfwgallery.urls'

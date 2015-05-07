@@ -10,8 +10,9 @@ from faces import views
 
 admin.autodiscover()
 
-router = SimpleRouter()
+router = routers.SimpleRouter()
 router.register(r'faces', views.GalleryViewSet)
+router.register(r'tags', views.TagViewSet)
 router.register(r'users', views.UserViewSet)
 
 faces_router = routers.NestedSimpleRouter(router, r'faces', lookup='face')

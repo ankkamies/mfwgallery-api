@@ -33,8 +33,8 @@ class Face(models.Model):
     user = models.ForeignKey('auth.User', related_name='faces')
     created = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='images', null = True)
-    thumbnail = models.ImageField(upload_to='images/thumbs', blank = True, null = True)
+    image = models.ImageField(upload_to='images')
+    thumbnail = models.ImageField(upload_to='images/thumbs', null = True)
     tags = models.ManyToManyField(Tag, related_name='tags')
 
     # Download image from url and save it to path
@@ -98,6 +98,9 @@ class Face(models.Model):
         elif DJANGO_TYPE == 'image/png':
             PIL_TYPE = 'png'
             FILE_EXTENSION = 'png'
+        elif DJANGO_TYPE == 'image/gif':
+            PIL_TYPE = 'gif'
+            FILE_EXTENSION = 'gif'
 
         image = Image.open(BytesIO(self.image.read()))
 
@@ -112,7 +115,7 @@ class Face(models.Model):
 
         self.image.name = hash.hexdigest()[:10] + '.' + FILE_EXTENSION
 
-      # Save image to a SimpleUploadFile temporarily
+        # Save image to a SimpleUploadFile temporarily
         mem_file = InMemoryUploadedFile(temp_handle, image, os.path.split(self.image.name)[-1], DJANGO_TYPE, getsizeof(temp_handle), None)
         self.thumbnail.save('%s_uu.%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
 
@@ -120,4 +123,3 @@ class Face(models.Model):
         self.create_thumbnail()
 
         super(Face, self).save(*args, **kwargs)
-
