@@ -17,9 +17,6 @@ from django.forms.util import ValidationError
 from django.db import models
 from django.utils import timezone
 
-class Tag(models.Model):
-    text = models.CharField(max_length=60)
-
 class Comment(models.Model):
     user = models.ForeignKey('auth.User', related_name='comments')
     face = models.ForeignKey('Face', related_name='comments')
@@ -29,13 +26,19 @@ class Comment(models.Model):
     def __unicode__(self):
         return '<%n> %t' % (self.nick, self.text)
 
+class Tag(models.Model):
+    text = models.CharField(max_length=60)
+
+    def __str__(self):
+        return self.text;
+
 class Face(models.Model):
     user = models.ForeignKey('auth.User', related_name='faces')
     created = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='images')
+    file = models.ImageField(upload_to='images')
     thumbnail = models.ImageField(upload_to='images/thumbs', null = True)
-    tags = models.ManyToManyField(Tag, related_name='tags')
+    tags = models.ManyToManyField(Tag, related_name='faces')
 
     # Download image from url and save it to path
     def get_image(self):
@@ -73,7 +76,7 @@ class Face(models.Model):
 
         # Set created image as ImageField
         mem_file = InMemoryUploadedFile(temp_handle, image, filename, DJANGO_TYPE, temp_handle.len, None)
-        self.image.save('%s%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
+        self.file.save('%s%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
         
         image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
 
@@ -86,11 +89,11 @@ class Face(models.Model):
 
 
     def create_thumbnail(self):
-        if not self.image:
+        if not self.file:
             return
 
         THUMB_SIZE = (256,256)
-        DJANGO_TYPE = self.image.file.content_type
+        DJANGO_TYPE = self.file.file.content_type
 
         if DJANGO_TYPE == 'image/jpeg':
             PIL_TYPE = 'jpeg'
@@ -102,7 +105,7 @@ class Face(models.Model):
             PIL_TYPE = 'gif'
             FILE_EXTENSION = 'gif'
 
-        image = Image.open(BytesIO(self.image.read()))
+        image = Image.open(BytesIO(self.file.read()))
 
         image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
 
@@ -113,13 +116,14 @@ class Face(models.Model):
         # Generate new filename
         hash = hashlib.sha1(str(time.time()).encode())
 
-        self.image.name = hash.hexdigest()[:10] + '.' + FILE_EXTENSION
+        self.file.name = hash.hexdigest()[:10] + '.' + FILE_EXTENSION
 
         # Save image to a SimpleUploadFile temporarily
-        mem_file = InMemoryUploadedFile(temp_handle, image, os.path.split(self.image.name)[-1], DJANGO_TYPE, getsizeof(temp_handle), None)
+        mem_file = InMemoryUploadedFile(temp_handle, image, os.path.split(self.file.name)[-1], DJANGO_TYPE, getsizeof(temp_handle), None)
         self.thumbnail.save('%s_uu.%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
 
     def save(self, *args, **kwargs):
         self.create_thumbnail()
 
         super(Face, self).save(*args, **kwargs)
+

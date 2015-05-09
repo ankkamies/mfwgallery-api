@@ -10,8 +10,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-MEDIA_ROOT = '/home/ankkamies/Projects/www/media/'
-STATIC_ROOT = '/home/ankkamies/Projects/www/static/'
+MEDIA_ROOT = 'G:\Projekti\mfwgallery-web\public\media'
+STATIC_ROOT = 'G:\Projekti\mfwgallery-web\public\static'
 
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
@@ -22,18 +22,19 @@ SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = (os.path.join(SETTINGS_PATH, 'templates'))
 STATICFILES_DIRS = (os.path.join(SETTINGS_PATH, 'static'),)
 """
+
+
 REST_FRAMEWORK = {
 
         'DEFAULT_AUTHENTICATION_CLASSES': ( 
-            'rest_framework.authentication.BasicAuthentication',
-            'rest_framework.authentication.SessionAuthentication',
+            'mfwgallery.authentication.QuietBasicAuthentication',
         ),
-
         'DEFAULT_RENDERER_CLASSES': ( 
             'rest_framework.renderers.JSONRenderer', 
         )
-
 }
+
+
 
 
 # Quick-start development settings - unsuitable for production                                                                                                                                                      
@@ -67,6 +68,7 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -87,11 +89,7 @@ CORS_ALLOW_HEADERS = (
     'accept-encoding',
     'origin',
     'authorization',
-    'x-csrftoken'
-)
-
-CORS_EXPOSE_HEADERS = (
-    'Set-Cookie'
+    'X-CSRFToken'
 )
 
 ROOT_URLCONF = 'mfwgallery.urls'

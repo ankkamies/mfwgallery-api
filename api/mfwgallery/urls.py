@@ -15,13 +15,17 @@ router.register(r'faces', views.GalleryViewSet)
 router.register(r'tags', views.TagViewSet)
 router.register(r'users', views.UserViewSet)
 
+users_router = routers.NestedSimpleRouter(router, r'users', lookup='user')
+users_router.register(r'faces', views.UserGalleryViewSet)
+
 faces_router = routers.NestedSimpleRouter(router, r'faces', lookup='face')
 faces_router.register(r'comments', views.CommentViewSet)
 
 urlpatterns = patterns('',
     url(r'^api/', include(router.urls)),
     url(r'^api/', include(faces_router.urls)),
+    url(r'^api/', include(users_router.urls)),
     url(r'^api/admin/', include(admin.site.urls)),
-    url(r'^api/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/auth/login/$', views.LoginView.as_view()),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

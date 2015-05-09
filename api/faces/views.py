@@ -1,15 +1,28 @@
 from django.contrib.auth.models import User
 
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_exempt
 
 from faces.models import Face, Comment, Tag
 from faces.serializers import UserSerializer, UserGetSerializer, FaceSerializer, FaceGetSerializer, CommentSerializer, TagSerializer
+
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+from mfwgallery import authentication
+
+class LoginView(APIView):
+    authentication_classes = (authentication.QuietBasicAuthentication,)
+    serializer_class = UserSerializer
+
+    def post(self, request):
+        return Response(self.serializer_class(request.user).data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -20,7 +33,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = self.queryset.get(pk=pk)
+        queryset = self.queryset.get(username=pk)
         serializer = UserGetSerializer(queryset)
         return Response(serializer.data)
 
@@ -39,9 +52,19 @@ class GalleryViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.get(pk=pk)
         serializer = FaceGetSerializer(queryset)
         return Response(serializer.data)
-
+        
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+class UserGalleryViewSet(viewsets.ModelViewSet):
+    queryset = Face.objects.all()
+    serializer_class = FaceGetSerializer
+
+    def list(self, request, user_pk=None):
+        user = User.objects.get(username=user_pk)
+        queryset = self.queryset.filter(user=user)
+        serializer = FaceGetSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
