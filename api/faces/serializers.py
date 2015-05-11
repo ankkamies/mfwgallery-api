@@ -2,7 +2,7 @@ from rest_framework import serializers
 from faces.models import Face, Comment, Tag, ImageModel
 from django.contrib.auth.models import User
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('password', 'username', 'first_name', 'last_name', 'email')
@@ -12,12 +12,19 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(attrs.get('username'), attrs.get('email'), attrs.get('password'))
         user.first_name = attrs.get('first_name')
         user.last_name = attrs.get('last_name')
+        user.save()
         return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
 
     def update(self, instance, attrs):
         instance.first_name = attrs.get('first_name', instance.first_name)
         instance.last_name = attrs.get('last_name', instance.last_name)
         instance.email = attrs.get('email', instance.email)
+        instance.save()
         return instance
 
 class UserGetSerializer(serializers.ModelSerializer):
@@ -48,11 +55,6 @@ class FaceSerializer(serializers.ModelSerializer):
         model = Face
         fields = ('user', 'username', 'created', 'description', 'image', 'tags')
 
-class TagGetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = ('text', 'faces')
-
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
 
@@ -73,3 +75,9 @@ class FaceGetSerializer(serializers.ModelSerializer):
         read_only_fields = ('thumbnail', 'comments')
         depth = 1
 
+class TagGetSerializer(serializers.ModelSerializer):
+    faces = FaceGetSerializer(many = True, read_only=True)
+
+    class Meta:
+        model = Tag
+        fields = ('text', 'faces')

@@ -28,5 +28,6 @@ urlpatterns = patterns('',
     url(r'^api/', include(users_router.urls)),
     url(r'^api/admin/', include(admin.site.urls)),
     url(r'^api/auth/login/$', views.LoginView.as_view()),
+    url(r'^api/auth/register/$', views.RegisterView.as_view()),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

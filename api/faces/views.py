@@ -12,18 +12,27 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import FileUploadParser
 
 from faces.models import Face, Comment, Tag, ImageModel
-from faces.serializers import UserSerializer, UserGetSerializer, FaceSerializer, FaceGetSerializer, CommentSerializer, TagSerializer, TagGetSerializer, ImageSerializer
+from faces.serializers import UserSerializer, UserGetSerializer, FaceSerializer, FaceGetSerializer, CommentSerializer, TagSerializer, TagGetSerializer, ImageSerializer, RegisterSerializer
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 from mfwgallery import authentication
 
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+
 class LoginView(APIView):
     serializer_class = UserSerializer
 
     def post(self, request):
         return Response(self.serializer_class(request.user).data)
+
+# Users can be created without authentication
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = (AllowAny,)
 
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = ImageModel.objects.all()

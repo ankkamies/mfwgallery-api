@@ -29,6 +29,9 @@ REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': ( 
             'mfwgallery.authentication.QuietBasicAuthentication',
         ),
+        'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+        ),
 }
 """
         'DEFAULT_RENDERER_CLASSES': ( 
@@ -61,6 +64,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'oauth2_provider',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_nested',
