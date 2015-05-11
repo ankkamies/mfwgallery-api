@@ -9,8 +9,10 @@ from rest_framework.views import APIView
 
 from django.views.decorators.csrf import csrf_exempt
 
-from faces.models import Face, Comment, Tag
-from faces.serializers import UserSerializer, UserGetSerializer, FaceSerializer, FaceGetSerializer, CommentSerializer, TagSerializer
+from rest_framework.parsers import FileUploadParser
+
+from faces.models import Face, Comment, Tag, ImageModel
+from faces.serializers import UserSerializer, UserGetSerializer, FaceSerializer, FaceGetSerializer, CommentSerializer, TagSerializer, TagGetSerializer, ImageSerializer
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -18,11 +20,14 @@ from django.utils.decorators import method_decorator
 from mfwgallery import authentication
 
 class LoginView(APIView):
-    authentication_classes = (authentication.QuietBasicAuthentication,)
     serializer_class = UserSerializer
 
     def post(self, request):
         return Response(self.serializer_class(request.user).data)
+
+class ImageViewSet(viewsets.ModelViewSet):
+    queryset = ImageModel.objects.all()
+    serializer_class = ImageSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -52,7 +57,7 @@ class GalleryViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.get(pk=pk)
         serializer = FaceGetSerializer(queryset)
         return Response(serializer.data)
-        
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -69,6 +74,19 @@ class UserGalleryViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+    def list(self, request):
+        serializer = TagGetSerializer(self.queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = self.queryset.get(pk=pk)
+        serializer = TagGetSerializer(queryset)
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save()    
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()

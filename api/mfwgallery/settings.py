@@ -29,11 +29,13 @@ REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': ( 
             'mfwgallery.authentication.QuietBasicAuthentication',
         ),
+}
+"""
         'DEFAULT_RENDERER_CLASSES': ( 
             'rest_framework.renderers.JSONRenderer', 
         )
 }
-
+"""
 
 
 

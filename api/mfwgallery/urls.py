@@ -14,6 +14,7 @@ router = routers.SimpleRouter()
 router.register(r'faces', views.GalleryViewSet)
 router.register(r'tags', views.TagViewSet)
 router.register(r'users', views.UserViewSet)
+router.register(r'images', views.ImageViewSet)
 
 users_router = routers.NestedSimpleRouter(router, r'users', lookup='user')
 users_router.register(r'faces', views.UserGalleryViewSet)

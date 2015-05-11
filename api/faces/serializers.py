@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from faces.models import Face, Comment, Tag
+from faces.models import Face, Comment, Tag, ImageModel
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,29 +28,30 @@ class UserGetSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'first_name', 'last_name', 'email', 'faces', 'comments')
 
-class FaceSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.id')
-    username = serializers.ReadOnlyField(source='user.username')
-
-    class Meta:
-        model = Face
-        fields = ('user', 'username', 'created', 'description', 'file', 'tags')
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'text', 'faces')
+        fields = ('text',)
 
-class FaceGetSerializer(serializers.ModelSerializer):
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageModel
+        fields = ('id','file', 'thumbnail', 'face')
+        read_only_fields = ('thumbnail', 'face')
+
+class FaceSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.id')
     username = serializers.ReadOnlyField(source='user.username')
-    comments = serializers.PrimaryKeyRelatedField(many=True, queryset=Comment.objects.all())
-    tags = serializers.StringRelatedField(many=True)
+    image = serializers.PrimaryKeyRelatedField(queryset=ImageModel.objects.all())
 
     class Meta:
         model = Face
-        fields = ('user', 'username', 'id', 'created', 'description', 'file', 'thumbnail', 'comments', 'tags')
-        read_only_fields = ('thumbnail', 'comments')
+        fields = ('user', 'username', 'created', 'description', 'image', 'tags')
+
+class TagGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('text', 'faces')
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
@@ -60,4 +61,15 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('user', 'face', 'text', 'created')
         read_only_fields = ('face',)
 
+class FaceGetSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.id')
+    username = serializers.ReadOnlyField(source='user.username')
+    comments = CommentSerializer(many=True, read_only=True)
+    tags = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Face
+        fields = ('user', 'username', 'id', 'created', 'description', 'image', 'comments', 'tags')
+        read_only_fields = ('thumbnail', 'comments')
+        depth = 1
 
