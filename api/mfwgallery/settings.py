@@ -18,12 +18,6 @@ STATIC_URL = '/static/'
 
 SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
-"""
-TEMPLATE_DIRS = (os.path.join(SETTINGS_PATH, 'templates'))
-STATICFILES_DIRS = (os.path.join(SETTINGS_PATH, 'static'),)
-"""
-
-
 REST_FRAMEWORK = {
 
         'DEFAULT_AUTHENTICATION_CLASSES': ( 
@@ -39,8 +33,6 @@ REST_FRAMEWORK = {
         )
 }
 """
-
-
 
 # Quick-start development settings - unsuitable for production                                                                                                                                                      
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/                                                                                                                                             
@@ -68,7 +60,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_nested',
-    'faces',
+    'posts',
     'corsheaders'
 )
 
