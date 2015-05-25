@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'mfwgallery.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ankkamies',
-        'USER': 'ankkamies',
-        'PASSWORD': 'qWL4M27zq5',
-        'HOST': 'psql1.n.kapsi.fi',
-        'PORT': '5432',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
     }
 }
 
