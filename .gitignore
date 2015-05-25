@@ -27,8 +27,8 @@ run/
 .installed.cfg
 *.egg
 supervisord.conf
-*settings.py
-*urls.py
+*/*/settings.py
+*/*/urls.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
