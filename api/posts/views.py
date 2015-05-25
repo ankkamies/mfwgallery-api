@@ -44,6 +44,22 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
 
     def create(self, request):
+        # Handle adding tags
+        tags = []
+        tag_queryset = Tag.objects.all()
+        
+        # Check if tags already exist
+        for tag in request.data['tags']:
+            if not tag_queryset.filter(text=tag).exists():
+                # Keep tags that do not exist
+                tags.append({'text':tag})
+
+        # Serialize and save tags that do not exist
+        tag_serializer = TagSerializer(data=tags, many=True)
+        tag_serializer.is_valid(raise_exception=True)
+        tag_serializer.save()
+
+        # Save post
         serializer = NewPostSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
