@@ -45,7 +45,11 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('user', 'text', 'created')
 
 class NewPostSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.id')
+    user = serializers.ReadOnlyField(source='user.id') 
+    tags = serializers.SlugRelatedField(
+            slug_field='text',
+            queryset=Tag.objects.all(),
+            many=True)
 
     class Meta:
         model = Post
