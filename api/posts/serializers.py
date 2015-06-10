@@ -55,6 +55,16 @@ class NewPostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ('user', 'created', 'description', 'image', 'tags')
 
+class UpdatePostSerializer(serializers.ModelSerializer):
+    tags = serializers.SlugRelatedField(
+            slug_field='text',
+            queryset=Tag.objects.all(),
+            many=True)
+
+    class Meta:
+        model = Post
+        fields = ('description', 'tags')
+
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.id')
     username = serializers.ReadOnlyField(source='user.username')

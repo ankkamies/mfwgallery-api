@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import Post, Comment, Tag, ImageModel
-from posts.serializers import UserSerializer, PostSerializer, NewPostSerializer, CommentSerializer, TagSerializer, ImageSerializer, NewUserSerializer
+from posts.serializers import UserSerializer, PostSerializer, NewPostSerializer, UpdatePostSerializer, CommentSerializer, TagSerializer, ImageSerializer, NewUserSerializer
 
 from mfwgallery.permissions import IsAuthenticatedOrCreate
 
@@ -66,6 +66,34 @@ class PostViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def update(self, request, pk=None, partial=False):
+        # Handle adding tags
+        tags = []
+        tag_queryset = Tag.objects.all()
+        
+        # Check if tags already exist
+        for tag in request.data['tags']:
+            if not tag_queryset.filter(text=tag).exists():
+                # Keep tags that do not exist
+                tags.append({'text':tag})
+
+        # Serialize and save tags that do not exist
+        if tags:
+            print(tags)
+            tag_serializer = TagSerializer(data=tags, many=True)
+            tag_serializer.is_valid(raise_exception=True)
+            tag_serializer.save()
+
+        # Update post
+        instance = self.queryset.get(pk=pk)
+        serializer = UpdatePostSerializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -116,8 +144,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, pk=None, post_pk=None):
-        queryset = self.queryset.get(pk=pk, post=post_pk)
-        serializer = CommentSerializer(queryset)
+        instance = self.queryset.get(pk=pk, post=post_pk)
+        serializer = CommentSerializer(instance)
         return Response(serializer.data)
 
     def perform_create(self, serializer, post):
