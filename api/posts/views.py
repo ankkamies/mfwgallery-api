@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins
 from rest_framework import status
 from rest_framework import generics
+from rest_framework import filters
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -42,6 +43,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('created',)
 
     def create(self, request):
         # Handle adding tags
