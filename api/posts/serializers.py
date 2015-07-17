@@ -44,6 +44,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('user', 'text', 'created')
 
+class UrlImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageModel
+        fields = ('id', 'file', 'thumbnail', 'url',)
+        read_only_fields = ('file', 'thumbnail')
+
 class NewPostSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.id') 
     tags = serializers.SlugRelatedField(

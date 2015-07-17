@@ -1,6 +1,7 @@
 import os
 import hashlib
 import time
+import requests
 
 from sys import getsizeof
 from PIL import Image
@@ -29,13 +30,58 @@ class Tag(models.Model):
         return self.text;
 
 class ImageModel(models.Model):
-    file = models.ImageField(upload_to='images')
+    file = models.ImageField(upload_to='images', null = True)
     thumbnail = models.ImageField(upload_to='images/thumbs', null = True)
+    url = models.CharField(max_length=300, null = True)
+
+    def get_image(self):
+        THUMB_SIZE = (256,256)         
+        FILE_EXTENSION = os.path.splitext(self.url)[1]
+        print(FILE_EXTENSION)
+        # Generate new filename
+        hash = hashlib.sha1(str(time.time()).encode())
+
+        self.file.name = hash.hexdigest()[:10] + '.' + FILE_EXTENSION
+
+        filename = hash.hexdigest()[:10] + FILE_EXTENSION
+        path = settings.MEDIA_ROOT + 'tmp' + FILE_EXTENSION
+        # Retrieve image and save it to FileField
+        r = requests.get(self.url, stream=True)
+        if r.status_code == 200:
+            print('Downloading image...')
+            with open(path, 'wb') as f:
+                for chunk in r.iter_content(1024):
+                    f.write(chunk)
+
+        if FILE_EXTENSION == '.jpg' or FILE_EXTENSION == '.jpeg':
+            PIL_TYPE = 'jpeg'
+            DJANGO_TYPE = 'image/jpeg'
+        elif FILE_EXTENSION == '.png':
+            PIL_TYPE = 'png'
+            DJANGO_TYPE = 'image/png'
+        elif FILE_EXTENSION == '.gif':
+            PIL_TYPE = 'gif'
+            DJANGO_TYPE = 'image/gif'
+
+        image = Image.open(path)
+
+        temp_handle = BytesIO()
+        image.save(temp_handle, PIL_TYPE)
+        temp_handle.seek(0)
+
+        mem_file = InMemoryUploadedFile(temp_handle, image, filename, DJANGO_TYPE, getsizeof(temp_handle), None)
+        self.file.save('%s%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
+        
+        image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
+
+        temp_handle = BytesIO()
+        image.save(temp_handle, PIL_TYPE)
+        temp_handle.seek(0)
+
+        mem_file = InMemoryUploadedFile(temp_handle, image, filename, DJANGO_TYPE, getsizeof(temp_handle), None)
+        self.thumbnail.save('%s_uu%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
 
     def create_thumbnail(self):
-        if not self.file:
-            return
-
         THUMB_SIZE = (256,256)
         DJANGO_TYPE = self.file.file.content_type
 
@@ -67,7 +113,12 @@ class ImageModel(models.Model):
         self.thumbnail.save('%s_uu.%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
 
     def save(self, *args, **kwargs):
-        self.create_thumbnail()
+        if (self.url != None):
+            self.get_image()
+        elif (self.file != None):
+            self.create_thumbnail()
+        else:
+            return
         super(ImageModel, self).save(*args, **kwargs)
 
 class Post(models.Model):

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import Post, Comment, Tag, ImageModel
-from posts.serializers import UserSerializer, PostSerializer, NewPostSerializer, UpdatePostSerializer, CommentSerializer, TagSerializer, ImageSerializer, NewUserSerializer
+from posts.serializers import UserSerializer, PostSerializer, NewPostSerializer, UpdatePostSerializer, CommentSerializer, TagSerializer, ImageSerializer, UrlImageSerializer, NewUserSerializer
 
 from mfwgallery.permissions import IsAuthenticatedOrCreate
 
@@ -29,6 +29,10 @@ class RegisterView(generics.CreateAPIView):
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = ImageModel.objects.all()
     serializer_class = ImageSerializer
+
+class UrlImagePostView(generics.ListCreateAPIView):
+    queryset = ImageModel.objects.all()
+    serializer_class = UrlImageSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
