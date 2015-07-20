@@ -7,6 +7,8 @@ from sys import getsizeof
 from PIL import Image
 from io import BytesIO
 
+from rest_framework.exceptions import ParseError
+
 from django.conf import settings
 from django.core.files.images import ImageFile
 from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
@@ -41,10 +43,9 @@ class ImageModel(models.Model):
         # Generate new filename
         hash = hashlib.sha1(str(time.time()).encode())
 
-        self.file.name = hash.hexdigest()[:10] + '.' + FILE_EXTENSION
-
         filename = hash.hexdigest()[:10] + FILE_EXTENSION
-        path = settings.MEDIA_ROOT + 'tmp' + FILE_EXTENSION
+        path = settings.MEDIA_ROOT + 'images/' + filename + FILE_EXTENSION
+
         # Retrieve image and save it to FileField
         r = requests.get(self.url, stream=True)
         if r.status_code == 200:
@@ -63,11 +64,10 @@ class ImageModel(models.Model):
             PIL_TYPE = 'gif'
             DJANGO_TYPE = 'image/gif'
 
-        image = Image.open(path)
-
-        temp_handle = BytesIO()
-        image.save(temp_handle, PIL_TYPE)
-        temp_handle.seek(0)
+        try:
+            image = Image.open(path)
+        except IOError:
+            raise ParseError('Not a valid image.')
 
         mem_file = InMemoryUploadedFile(temp_handle, image, filename, DJANGO_TYPE, getsizeof(temp_handle), None)
         self.file.save('%s%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
@@ -95,7 +95,10 @@ class ImageModel(models.Model):
             PIL_TYPE = 'gif'
             FILE_EXTENSION = 'gif'
 
-        image = Image.open(BytesIO(self.file.read()))
+        try:
+            image = Image.open(BytesIO(self.file.read()))
+        except IOError:
+            raise ParseError('Not a valid image.')
 
         image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
 
