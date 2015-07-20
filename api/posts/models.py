@@ -44,7 +44,7 @@ class ImageModel(models.Model):
         hash = hashlib.sha1(str(time.time()).encode())
 
         filename = hash.hexdigest()[:10] + FILE_EXTENSION
-        path = settings.MEDIA_ROOT + 'images/' + filename + FILE_EXTENSION
+        path = settings.MEDIA_ROOT + 'tempfile' + FILE_EXTENSION
 
         # Retrieve image and save it to FileField
         r = requests.get(self.url, stream=True)
@@ -68,6 +68,10 @@ class ImageModel(models.Model):
             image = Image.open(path)
         except IOError:
             raise ParseError('Not a valid image.')
+
+        temp_handle = BytesIO()
+        image.save(temp_handle, PIL_TYPE)
+        temp_handle.seek(0)
 
         mem_file = InMemoryUploadedFile(temp_handle, image, filename, DJANGO_TYPE, getsizeof(temp_handle), None)
         self.file.save('%s%s'%((os.path.splitext(mem_file.name))[0], FILE_EXTENSION), mem_file, save=False)
